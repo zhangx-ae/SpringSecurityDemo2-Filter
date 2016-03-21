@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security-3.2.xsd
+       ">
+
+    <!--
+            下面的3个URL分别指定了权限，这里使用了SpringEl表达式
+            表达式用法：
+                hasRole([role])  返回true——当前主体拥有特定角色
+                hasAnyRole([role1,role2])  返回true——当前主体拥有任何一个提供的角色（使用，分隔的字符串队列）
+                principal  允许直接访问主体对象，表示当前用户
+                authentication  允许直接访问当前Authentication对象   从SecurityContext中获得
+                permitAll  一直返回true
+                denyAll  一直返回false
+                isAnonymous()  如果用户是一个匿名登录的用户 就会返回 true
+                isRememberMe()	如果用户是通过remember-me 登录的用户 就会返回 true
+                isAuthenticated()	如果用户不是匿名用户就会返回true
+                isFullyAuthenticated()	如果用户不是通过匿名也不是通过remember-me登录的用户时， 就会返回true。
+        -->
+    <security:http auto-config="true" use-expressions="true" access-denied-page="/auth/denied">
+        <!-- 表示所有人都能够访问/auth/login -->
+        <security:intercept-url pattern="/auth/login" access="permitAll"/>
+        <!-- 表示只有相应的角色才能访问       -->
+        <security:intercept-url pattern="/main/admin" access="hasRole('ROLE_ADMIN')"/>
+        <security:intercept-url pattern="/main/common" access="hasAnyRole('ROLE_USER,ROLE_ADMIN')"/>
+
+        <!--
+            指定登录界面，表示通过/auth/login这个映射登录
+            如果验证失败则返回一个URL：/auth/login?error=true
+            如果登录成功则默认指向/main/common
+        -->
+        <security:form-login
+            login-page="/auth/login"
+            authentication-failure-url="/auth/login?error=true"
+            default-target-url="/main/common"/>
+
+        <!--
+            开启了session失效功能
+        -->
+        <security:logout
+            invalidate-session="true"
+            logout-success-url="/auth/login"
+            logout-url="/auth/logout"/>
+    </security:http>
+
+    <!-- 指定一个自定义的authentication-manager :myUserDetailService -->
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="myUserDetailService">
+            <security:password-encoder ref="passwordEncoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder"/>
+
+    <!--
+       通过 myUserDetailService,Spring会自动的用户的访问级别.
+       也可以理解成:以后我们和数据库操作就是通过myUserDetailService来进行关联.
+    -->
+    <bean id="customUserDetailService" class="com.glodon.security.service.CustomUserDetailsService"/>
+    <bean id="myUserDetailService" class="com.glodon.security.service.MyCustomUserDetailsService"/>
+
+</beans>
