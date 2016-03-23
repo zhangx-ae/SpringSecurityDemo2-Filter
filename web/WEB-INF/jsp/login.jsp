@@ -16,7 +16,7 @@
     <br>
     ${error}
     <br>
-    <form action="../j_spring_security_check" method="post">
+    <form action="/SSD2/auth/login" method="post">
         <p>
             <label for="j_username">Username</label><input id="j_username" name="j_username" type="text">
         </p>

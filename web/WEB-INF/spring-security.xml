@@ -23,38 +23,67 @@
                 isAuthenticated()	如果用户不是匿名用户就会返回true
                 isFullyAuthenticated()	如果用户不是通过匿名也不是通过remember-me登录的用户时， 就会返回true。
         -->
-    <security:http auto-config="true" use-expressions="true" access-denied-page="/auth/denied">
+    <security:http  use-expressions="true" access-denied-page="/auth/denied"
+                   authentication-manager-ref="disuserAuthManager" name="disuserSecurity"
+                   entry-point-ref="authenticationEntryPoint">
         <!-- 表示所有人都能够访问/auth/login -->
         <security:intercept-url pattern="/auth/login" access="permitAll"/>
         <!-- 表示只有相应的角色才能访问       -->
         <security:intercept-url pattern="/main/admin" access="hasRole('ROLE_ADMIN')"/>
         <security:intercept-url pattern="/main/common" access="hasAnyRole('ROLE_USER,ROLE_ADMIN')"/>
 
-        <!--
-            指定登录界面，表示通过/auth/login这个映射登录
-            如果验证失败则返回一个URL：/auth/login?error=true
-            如果登录成功则默认指向/main/common
-        -->
-        <security:form-login
-            login-page="/auth/login"
-            authentication-failure-url="/auth/login?error=true"
-            default-target-url="/main/common"/>
+        <security:custom-filter ref="loginProcessFilter" position="FORM_LOGIN_FILTER"/>
 
-        <!--
-            开启了session失效功能
-        -->
-        <security:logout
-            invalidate-session="true"
-            logout-success-url="/auth/login"
-            logout-url="/auth/logout"/>
+        <!--<security:form-login-->
+            <!--login-page="/auth/login"-->
+            <!--authentication-failure-url="/auth/login?error=true"-->
+            <!--default-target-url="/main/common"/>-->
+
+        <!--<security:logout-->
+            <!--invalidate-session="true"-->
+            <!--logout-success-url="/auth/login"-->
+            <!--logout-url="/auth/logout"/>-->
     </security:http>
 
-    <!-- 指定一个自定义的authentication-manager :myUserDetailService -->
-    <security:authentication-manager>
-        <security:authentication-provider user-service-ref="myUserDetailService">
+    <security:authentication-manager id="disuserAuthManager" >
+        <security:authentication-provider user-service-ref="DisuserserDetailService" >
             <security:password-encoder ref="passwordEncoder"/>
         </security:authentication-provider>
     </security:authentication-manager>
+
+    <!-- 登录处理Filter  -->
+    <bean id="loginProcessFilter" class="com.glodon.security.service.DisUsernamePasswordAuthenticationFilter">
+        <property name="kaptcha" value="kaptcha" />
+        <property name="usernameParameter" value="j_username" />
+        <property name="passwordParameter" value="j_password" />
+        <property name="filterProcessesUrl" value="/SSD2/auth/login" />
+        <property name="authenticationManager" ref="disuserAuthManager" />
+        <property name="authenticationSuccessHandler" ref="successHandler" />
+        <property name="authenticationFailureHandler" ref="failureHandler" />
+    </bean>
+
+    <!-- 登录成功处理 -->
+    <bean id="successHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+        <property name="defaultTargetUrl" value="/index.jsp" />
+        <property name="alwaysUseDefaultTargetUrl" value="true" />
+    </bean>
+
+    <!-- 登录失败处理 -->
+    <bean id="failureHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+        <property name="defaultFailureUrl" value="/auth/login.jsp?error=true" />
+    </bean>
+
+    <!-- 登录入口 -->
+    <bean id="authenticationEntryPoint"
+          class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <property name="loginFormUrl" value="/auth/login.jsp" />
+    </bean>
+    <!-- 指定一个自定义的authentication-manager :myUserDetailService -->
+    <!--<security:authentication-manager id="old-authentication-manager">-->
+        <!--<security:authentication-provider user-service-ref="myUserDetailService">-->
+            <!--<security:password-encoder ref="passwordEncoder"/>-->
+        <!--</security:authentication-provider>-->
+    <!--</security:authentication-manager>-->
 
     <bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder"/>
 

@@ -8,12 +8,11 @@ http://www.springframework.org/schema/aop
 http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 ">
 
-	<!-- JNDI方式配置数据源 -->
-	<!-- <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean"> <property name="jndiName" value="${jndiName}"></property> </bean> -->
-
 	<!-- 配置数据源 -->
-	<bean name="myDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
-		<property name="url" value="jdbc:mysql://localhost:3306/demo?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull" />
+	<bean name="myDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		  		init-method="init" destroy-method="close">
+		<property name="url" value="jdbc:mysql://localhost:3306/demo?
+				useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull" />
 		<property name="username" value="root" />
 		<property name="password" value="root" />
 
@@ -27,8 +26,6 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		<property name="minIdle" value="0" />
 		<!-- 获取连接最大等待时间 -->
 		<property name="maxWait" value="60000" />
-
-		<!-- <property name="poolPreparedStatements" value="true" /> <property name="maxPoolPreparedStatementPerConnectionSize" value="33" /> -->
 
 		<property name="validationQuery" value="SELECT 1" />
 		<property name="testOnBorrow" value="false" />
@@ -69,10 +66,6 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		<property name="dataSource" ref="myDataSource" />
 	</bean>
 
-	<!-- 注解方式配置事物 -->
-	<!-- <tx:annotation-driven transaction-manager="transactionManager" /> -->
-
-	<!-- 拦截器方式配置事物 -->
 	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
 		<tx:attributes>
 			<tx:method name="add*" propagation="REQUIRED" />

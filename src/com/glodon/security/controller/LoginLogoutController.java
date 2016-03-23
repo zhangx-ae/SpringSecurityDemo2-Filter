@@ -33,6 +33,15 @@ public class LoginLogoutController {
         return "deniedpage";
     }
 
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public String getLoginPagePost(
+            @RequestParam(value = "error", required = false) boolean error,
+            ModelMap model
+    ){
+        System.out.println("new login");
+        return "login";
+    }
+
 }
 
 
